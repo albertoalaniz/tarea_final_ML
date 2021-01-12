@@ -1,0 +1,393 @@
+---
+title: "Cavity-nesting network of Southern South American Temperate forest at biogeographical scale"
+author: "Alberto J. Alaniz"
+date: "11/01/2020"
+output: 
+   bookdown::pdf_document2:
+    toc: no
+bibliography: bibliog.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.pos = 'H')
+
+library(bookdown)
+library(tidyverse)
+library(MuMIn)
+library(mgcv)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+library(ggpubr)
+library(tinytex)
+library(readr)
+library(rticles)
+library(png)
+library(RCurl)
+##install.packages("mgcv"); install.packages("vegan");library(vegan) 
+library(corrplot);library(mgcv) ##install.packages(c("lavaan", "semTools", "semPlot"));library(ape) 
+library(lavaan); library(semPlot);library(semTools) ##install.packages("lme4");install.packages("nlme");install.packages("car")
+library(piecewiseSEM); library(lme4); library(nlme); ##install.packages("multcomp");install.packages("blmeco")
+library(multcomp)
+library(MASS); library(car) ##install.packages("mgcv"); install.packages("MuMIn"); install.packages("VIF"); install.packages("RMark") 
+library(mgcv);library(nlme);library(MuMIn);
+library(MuMIn)
+library(lme4)
+library(MASS)##install.packages("MASS"); 
+library(pscl)##install.packages("pscl"); 
+library(boot)##install.packages("boot"); install.packages("texreg"); install.packages("qpcR"); 
+library(texreg) ##install.packages("corrplot"); install.packages("piecewiseSEM"); install.packages("car"); 
+library(qpcR)
+library(stringr);library(RMark);library(blmeco);library(vegan);library(survival) ;library(devtools)
+
+USERS <-read.csv("https://raw.githubusercontent.com/albertoalaniz/tarea_final_ML/main/DATA_USERS_CAVITY4.csv", sep=";", header=TRUE)
+```
+
+
+# Abstract
+
+Cavities usually are a limiting resource for several forest dwelling vertebrates, with effects that propagate through ecological networks. Although diverse assemblages of primary excavators (e.g., woodpeckers) are assumed to increase cavities, other forest resources can also limit populations of primary excavators and cavity users, thus undermining the ecological role of excavators over different scales. We aim to test the biogeographical-scale relationships between primary excavators and cavity users by distinguishing the contribution of forest characteristics. We used Species Distribution Models, combining bioclimatic and remote sensing derived variables, to map the richness of vertebrates composing the cavity-network of temperate and mediterranean forests of south America. Based on a resampling procedure ensuring spatial independence, we fitted Structural Equation Models estimating causal relationships between forest characteristics and cavity user vertebrates. Secondary cavity users (obligated, habitat generalists and forest specialists) were positively and strongly influenced by the richness of primary excavators, while mammal richness was more influenced by tree richness. The richness of trees and Nothofagus tree species influenced positively the richness of primary excavators and secondary cavity users. Canopy height and net primary productivity also negatively affected positively secondary cavity users. Our results confirm findings of previous studies on the role of primary excavators in southern forest, but highlight the importance of considering biogeographical scales when analyzing cavity-nesting networks. Biogeographical patterns of tree diversity and forest structure can be important drivers of cavity nesting networks that remain hidden when studies are conducted over fine spatial scales. 
+
+
+# Introduction
+
+Resources are considered to limit animal species diversity with effects that spread though ecological networks [@BROWN2020117854]. A typically limiting resource in forests ecosystems are tree cavities used for reproduction and refuge  [@VanderHoek2017] by influencing individual fitness, population size and intraspecific competition [@Maziarz2016]. Moreover, the number of cavities could influence interspecific competition because tree cavities are used by diverse species, like small mammals, birds, reptiles and amphibians  [@Hernandez-Brito2020]. The number of cavities within a forest usually depends the decay stage of trees and animals acting as primary cavity excavators (Gutzat and Dormann 2018). The number of cavities generated without the intervention of animal species (natural cavities) increases as trees become older and die due to natural or anthropogenic disturbances such as tree falls, fires and logging [@Andersson2018]. The provision of cavities increases as primary excavators (i. e. woodpecker) generate new cavities for nesting and roosting through pecking living and dead trees [@Pakkala2018]. Woodpecker´s excavated cavities may be occupied by a series of organisms including wood-decaying fungi and vertebrates (referred to as secondary cavity users) [@Jusino2015]. Primary cavity excavators, secondary cavity users and cavity-trees interact through facilitation networks whose complexity is inherent to multiple ecological interactions, dynamics and processes acting from single tree to biome [@Ibarra2020].
+
+A diverse assemblage of woodpecker species may contribute to increase the number and diversity of cavities due to species-specific differences in terms of preferences for trees species, nest height and activity times [@Nappi2015]. Although the diversity of secondary cavity users depends on the diversity of excavators in forest patches [@Mikusinski2001] other resources (e.g food, refuges), interactions (e. g. predation, parasitism, competence) and disturbances (e.g. fires, logging) may also limit population of these organisms [@Ibarra2017]. In fact, forest conditions may undermine the role of primary excavators when either the availability of natural cavities is high enough, or when the habitat conditions are not suitable for primary excavator occupancy.
+
+The spatial distribution patterns of woodpecker species at biogeographical scales is an increasingly studied topic for conservation and protected area planning that typically involves using Species Distribution Models (SDM). SDMs has been related with a Grinellian niche approach, using environmental variables to predict potential distribution of species [@Soberon2009]. However, studies have supported that geographical patterns of species distribution and ecological assemblages are linked with ecological interactions [@Gherghel2018]. The studies that test how ecological interaction shapes the distribution of species assemblages at biogeographical scales have remained neglected in comparison with climate-based approaches. Examples are the positive relationship between the diversity of prey species and predators at biogeographical scale [@Alaniz2020] as well as the overlap of niche requirements and geographical distribution among mutualistic species [@Vasconcelos2017]. However, the community level impact of woodpeckers may depend on forest characteristics, such as tree species composition, structural heterogeneity, tree decay stage. The relative impacts of primary cavity excavators in comparison with forest characteristics can become complex to understand over biogeographical scales. Consequently, here we developed a new methodological framework intended to unravel the structure of the cavity-nesting network in Southern South American Forest. Particularly we aim to test the following non-excluding hypotheses:
+
+- The richness of secondary cavity users is influenced by primary excavators, while forest characteristics are less relevant (facilitation effect). This effect is predicted to be stronger for obligated cavity users.
+- The richness of secondary cavity users is influenced by forest characteristics, while the effect of primary excavators is less relevant (habitat effect). This effect is predicted to be stronger for forest specialist than habitat generalists.
+
+
+
+# Materials and methods
+
+## Study area and target species
+
+Southern South American forest is located from 30°S to 56°S in Chile and western Argentina, which is composed by three ecoregions the Chilean matorral or sclerophyll forest, Valdivian temperate forest and Magellanic subpolar forest (Olson et al. 2001). The cavity-nesting network in these biomes is integrated by four primary excavators _Campephilus magellanicus, Colaptes pitius, Dryobates lignarius_ and _Pygarrhichas albogularis_, while the number of secondary users have been estimated by different studies (Ibarra et al. 2017). Studies have suggested that the presence of these woodpeckers is highly linked with the diversity of other birds, being considered as ecosystem engineers in these forests [@Ojeda2004].
+
+We identified secondary cavity users and host trees though a systematic literature review of indexed scientific articles in the Web of Science, combining the following key words “cavity”, “users”, “nesters”, “secondary”, “Chile”, “Temperate”, “Mediterranean”, “forest ecosystems”. Then, the information of species-specific ecological traits was systematized as: A) level of dependency on cavities, B) level of dependency on forest ecosystem, C) type of cavity used (natural/excavated), C) behavior of cavity (nest/refuge), D) host tree species. In this analysis we included birds, mammals, reptile and amphibian species.
+
+
+## Analytical framework
+
+We used as main approach the SDM based on Maximum Entropy technique to estimate the distribution of primary cavity excavators, secondary cavity users and hosts tree species [@Phillips2017]. Then we generated a series of species richness maps for each species group, distinguishing among forest specialist, habitat specialists, obligated cavity users, mammals. Additionally, we generated a characterization of forest variables relevant for secondary cavity nesters based on the literature review. We used a sampling design based on non-neighboring hexagon units where species assemblages and forest variables were characterized. Finally, we developed Structural Equation Models (SEM) based on the sampled data to evaluate the effects of primary cavity excavators and forest characteristics across the nesting-cavity network.
+
+## Species inputs
+
+The SDMs requires species occurrences as input, thus we compiled a series of occurrence records from different sources for each species. In the case of animals, we included occurrences from: A) Global Biodiversity Information Faciity (GBIF), considering occurrences with specific geographical coordinates and deleting duplicated records, B) Ebird database, C) previously published studies, and D) our own records from trap cameras, systematic sampling and censuses accumulated in the las 10 years. In the case of trees we included occurrences from GBIF and [@Scherson2017], considering occurrences with specific geographical coordinates and deleting duplicated records, completing 121699 occurrences of which 117746 are animals and 3953 are trees. Then, to avoid spatial autocorrelation between occurrences we applied the spatial rarefy function in a Geographic Information System, which selected occurrences considering a minimum distance of 15 km between them, remaining 14179 and 2292 non-autocorrelated occurrences for animals and trees, respectively.
+
+## Environmental inputs
+
+The second input used by SDM corresponds to environmental predictor variables, which are used to estimate the potential distribution based on the niche requirements of species [@Elith2011]. We included variables associated with climate and biophysical characteristics. Climate variables included the 19 bioclimatic variables from WorldClim 2 project plus wind speed [@doi:10.1002/joc.5086]. Biophysical variables were processed in the Cloud-based platform Google Earth Engine including elevation, Evenness Vegetation Index (EVI), Normalized Difference Water Index (NDWI), Net Primary Productivity (NPP), Vegetation Continuous Fields (VCF), Soil Organic Carbon (SOC), the topographic diversity index, Net Evapotranspiration (NET) and  aboveground biomass (AGB). All the variables were estimated at 1 km of pixel resolution considering the coarser pixel of the used products (WorldClim 2).
+
+## Modelling procedure
+
+We modelled each species independently generating an initial exploratory model that included as inputs the non-spatially autocorrelated occurrences and the complete set of environmental variables. This model ran considering crossvalidation or boostrap in MaxEnt 3.4.1 depending on the number of occurrences, using jackknife technique to calculate the permutation importance (PI) and the percent contribution (PC) of each variable to the model. The background modelling area considered 100 km from forest vegetation from 30 °S to 56 °S. We estimated the correlation between pairs of variables using Spearman correlation index ( _rho_). Then to avoid a potential model overfitting due to the collinearity between environmental variables, we selected from the initial exploratory models the variables with highest PI and PC, as well as low correlation index ( _rho_ < 0.7). Finally, we ran a final model including the non-autocorrelated occurrences and the selected environmental variables from the previous step, considering crossvalidation or boostrap techniques depending on the number of occurrences. This process was performed independently for each modelled species. 
+
+## Data analysis
+
+To estimate the species richness, we summed the median suitability values from each species per group, considering this as a proxy for richness. These groups corresponded to cavity excavators ( _n_ = 4 species), secondary cavity users ( _n_ = 36 species) and hosts trees ( _n_ = 34 species). Additionally, we grouped the secondary users in four sub-categories based on our literature review including obligated cavity user birds (n= 13), habitat generalist birds ( _n_ = 13), forest specialist birds ( _n_ = 6), and mammals ( _n_ = 7). 
+
+We calculated habitat variables that are known to affect forest birds and mammals based on previous studies (Cockle et al. 2019). To characterize the forest decay stage, we included the Plant Senescence Reflectance Index  (PSRI), which was calculated as the median of all Sentinel-2 PSRI derived images for each summer season between 2014 and 2020, considering less than 5% of cloud cover between 30 and 42 °S and less than 40% at southern form 42°S ( _n_ = 1016). To characterize the maturity of forest we included the tree canopy height for the year 2005. Additionally, we included NPP, AGB and VCF as important variables related with succession and forest dynamics. 
+
+We used a 25 km2 grid to quantify each estimates of species richness (trees and vertebrates) and forests characteristics using the zonal function in the _Raster_ package in R (n = 4320). Sampling and analytical methodology involves the following steps: 
+
+A) Selection of non-neighboring hexagonal units separated by more than 20 km between them. Unit surface of 25 km2  is consistent with the area requirements of a minimum viable population of the largest forest vertebrate (the Magellanic woodpecker with 350g and 1 km 2 home range) within the studied cavity-nesting network [@Vergara2019]. 
+
+B) We used a resampling procedure to draw spatially independent samples of species diversity and forests characteristics to be analyzed later. We assumed that each sample represents a spatially independent realization of the nesting-cavity network within the geographical range of the biome. Thus, each sample involved 150 units randomly selected without replacement from a total of 4320 possible units, including 30 independent samples.
+
+C) The sampling data was fitted to SEM using PiecewiseSEM R package. We developed a single path model representing all the potential causal relationships among primary cavity excavators, secondary cavity users and trees. SEM were developed using psem function, which deal with variables with different distributions of errors and random effect structure. We used Linear Mixed-Effect models (LME) regressions through lme package in R. Richness of secondary cavity user and primary cavity excavators were specified as response variables, while forest variables and excavator diversity were considered predictor variables. Response variables were previously log-transformed aiming to adjust a Gaussian distribution and forest characteristics were standardized to make average values equal to zero. We included a latitudinal random factor controlling for latitudinal gradient in species distribution. Spatial auto-correlation in the residuals of SEM was evaluated using Mantel test. We computed model-averaged coefficients based on the Akaike Information Criterion (AIC) weights of the 30 SEM using the RMark package in R. The effect of each causal relationship was interpreted based on the averaged standardized coefficients value and their confidence intervals (CI), with CI values different from zero considered as significant effects. We reported the conditional and marginal regression coefficients.
+
+```{r, echo=FALSE, include=FALSE}
+
+Covar<-USERS[,which(colnames(USERS)=="tree_ri"): (ncol(USERS)-1)]
+Covar.name<-colnames(Covar)
+  round(cor(Covar),1); ifelse(abs(round(cor(Covar),1))>0.7,1,0) ##no correlation¡¡
+par(mfrow=c(3,3))
+for(i in 1:ncol(Covar)) {hist(Covar[,i], breaks=1000, xlab=Covar.name[i], cex.lab=2)}
+
+Covar<-scale(Covar)[1:NROW(Covar),]
+Response<-USERS[,4: (which(colnames(USERS)=="tree_ri")-1)]
+Response.name<-colnames(Response)
+Response<- log(Response+1)
+par(mfrow=c(3,2))
+for(i in 1:ncol(Response)) {hist(Response[,i], main="",breaks=1000, xlab=Response.name[i], cex.lab=1.2)}
+
+Covar<-Covar[,-which(colnames(Covar)=="ghm")]
+
+Covar.name<-colnames(Covar); Covar.name<-c(Covar.name,Response.name[6])
+
+Lat<- USERS$Lat; Long<- USERS$Long; Bioma<- USERS$BIOMA-1 ##as.factor(USERS$BIOMA);
+Datxos<-cbind(Covar,Response,Lat,Long,Bioma )
+
+################ Resampling
+
+Xc1<-Selection<-c()
+XX<-(1:NROW(Datxos))
+Size<-100
+Itera<-floor(NROW(XX)/Size); (Itera)
+
+for (i in 1:Itera){
+SAMP<-sample(XX,size=Size, replace = FALSE, prob =rep(1/NROW(XX),NROW(XX)) )
+Del<-c(); for (i in 1:NROW(SAMP)) Del<-c(Del,which(XX==SAMP[i])  )
+NewDat<-XX[Del] 
+XX<-XX[-Del]
+Selection<-c(Selection,NewDat)
+Xc1<-c(Xc1,XX)  }
+
+###################################################################################################
+   Fisher<-AIc<-Coef.SEM<-R2.SEM<-MAntel<-c()
+Size<-140; Itera<-30
+  to <-  (Size*(1:Itera))
+ from <-  1+ (Size*(1:Itera))-Size
+
+for(i in 1:Itera) {
+
+DatX<- Datxos[Selection[from[i]:to[i]]  , ]
+row.names(DatX) <- NULL
+YY<-DatX$Lat; XX<-DatX$Lon
+DatX$Lat<- as.factor(-round(DatX$Lat/(7*100000)))
+
+ fmla1 <- as.formula(paste(Response.name[1], "~", paste(Covar.name[1:8],collapse= "+"),"+ biomass*tree_ri"  ) )
+ fmla2 <- as.formula(paste(Response.name[2], "~", paste(Covar.name[1:8],collapse= "+"),"+ biomass*tree_ri"   ) )
+ fmla3 <- as.formula(paste(Response.name[3], "~", paste(Covar.name[1:8],collapse= "+"),"+ biomass*tree_ri"   ) )
+ fmla4 <- as.formula(paste(Response.name[4], "~", paste(Covar.name[1:8],collapse= "+"),"+ biomass*tree_ri"   ) )
+ fmla5 <- as.formula(paste(Response.name[5], "~", paste(Covar.name[1:8],collapse= "+"),"+ biomass*tree_ri"  ) )
+ fmla6 <- as.formula(paste(Response.name[6], "~", paste(Covar.name[1:7],collapse= "+"),"+ biomass*tree_ri"  ) )
+
+CAVITY <- psem( lme(fmla1, random = ~ 1|Lat , data = DatX ),lme(fmla2, random = ~ 1|Lat , data = DatX ),
+         lme(fmla3, random = ~ 1|Lat , data = DatX ), lme(fmla4, random = ~ 1|Lat , data = DatX ),
+          lme(fmla5, random = ~ 1|Lat , data = DatX ), lme(fmla6, random = ~ 1|Lat , data = DatX ))
+
+  CAVITY <-update(CAVITY, tree_ri %~~% notho_ri)
+  CAVITY <-update(CAVITY, tree_ri %~~% heght)
+  CAVITY <-update(CAVITY, tree_ri %~~% psri)
+  CAVITY <-update(CAVITY, tree_ri %~~% npp)
+  CAVITY <-update(CAVITY, tree_ri %~~% vcf)
+  CAVITY <-update(CAVITY, tree_ri %~~% biomass)
+  CAVITY <-update(CAVITY, tree_ri %~~% Bioma)
+  CAVITY <-update(CAVITY, notho_ri %~~% heght)
+  CAVITY <-update(CAVITY, notho_ri %~~% psri)
+  CAVITY <-update(CAVITY, notho_ri %~~% npp)
+  CAVITY <-update(CAVITY, notho_ri %~~% vcf)
+  CAVITY <-update(CAVITY, notho_ri %~~% biomass)
+  CAVITY <-update(CAVITY, notho_ri %~~% Bioma)
+  CAVITY <-update(CAVITY, heght %~~% psri)
+  CAVITY <-update(CAVITY, heght %~~% npp)
+  CAVITY <-update(CAVITY, heght %~~% vcf)
+  CAVITY <-update(CAVITY, heght %~~% biomass)
+  CAVITY <-update(CAVITY, heght %~~% Bioma)
+  CAVITY <-update(CAVITY, psri %~~% npp)
+  CAVITY <-update(CAVITY, psri %~~% vcf)
+  CAVITY <-update(CAVITY, psri %~~% biomass)
+  CAVITY <-update(CAVITY, psri %~~% Bioma)
+  CAVITY <-update(CAVITY, npp %~~% vcf)
+  CAVITY <-update(CAVITY, npp %~~% biomass)
+  CAVITY <-update(CAVITY, npp %~~% Bioma)
+  CAVITY <-update(CAVITY, vcf %~~% biomass)
+  CAVITY <-update(CAVITY, vcf %~~% Bioma)
+  CAVITY <-update(CAVITY, USERS_TOT %~~% USERS_O)
+  CAVITY <-update(CAVITY, USERS_TOT %~~% USERS_G)
+  CAVITY <-update(CAVITY, USERS_TOT %~~% USERS_FS)
+  CAVITY <-update(CAVITY, USERS_TOT %~~% USERS_MAM)
+  CAVITY <-update(CAVITY, USERS_O %~~% USERS_G)
+  CAVITY <-update(CAVITY, USERS_O %~~% USERS_FS)
+  CAVITY <-update(CAVITY, USERS_O %~~% USERS_MAM)
+  CAVITY <-update(CAVITY, USERS_G %~~% USERS_FS)
+  CAVITY <-update(CAVITY, USERS_G %~~% USERS_MAM)
+  CAVITY <-update(CAVITY, USERS_FS %~~% USERS_MAM)
+  CAVITY <-update(CAVITY, USERS_TOT %~~% Bioma)
+  CAVITY <-update(CAVITY, USERS_O %~~% Bioma)
+  CAVITY <-update(CAVITY, USERS_G %~~% Bioma)
+  CAVITY <-update(CAVITY, USERS_FS %~~% Bioma)
+
+CAV.SEM<-summary(CAVITY,  .progressBar = F)
+
+Res<-residuals(CAVITY )
+SpatialD<- as.matrix(dist(cbind(XX, YY)))
+ManT<- rep(NA, ncol(Res))
+  for(k in 1:ncol(Res)){
+         DistR <- dist(Res[,k])
+         d<-mantel(SpatialD, DistR) ; 
+           ManT[k] <-d$signif  }
+  ManT1<-matrix(ManT,ncol=ncol(Res), nrow=1)
+  colnames(ManT1)<-colnames(Res)
+   MAntel<-rbind(MAntel,ManT1)
+
+  Fisher1<-CAV.SEM$Cstat
+ Model<-rep(i,  NROW(Fisher1)) ; 
+Fisher1<-data.frame(cbind(Fisher1,Model ))
+
+AIc1<-CAV.SEM$IC
+Model<-rep(i,  NROW(AIc1)) ;  
+AIc1<-data.frame(cbind(AIc1,Model ))
+
+Coef.SEM1<-CAV.SEM$coefficients; 
+ Model<-rep(i,  NROW(Coef.SEM1)) ;
+Coef.SEM1<-data.frame(cbind(Coef.SEM1,Model))
+
+R2.SEM1<-CAV.SEM$R2; 
+Model<-rep(i, NROW(R2.SEM1)); 
+R2.SEM1<-data.frame(cbind(R2.SEM1,Model))
+
+Fisher<- rbind(Fisher,Fisher1)
+AIc<-rbind(AIc,AIc1)
+Coef.SEM<-rbind(Coef.SEM,Coef.SEM1)
+R2.SEM<-rbind(R2.SEM,R2.SEM1)
+      
+   }######end
+
+Fisher.all <-Fisher
+AIc.all <- AIc
+Coef.SEM.all <-Coef.SEM
+R2.SEM.all <-R2.SEM
+MAntel.all <-MAntel
+
+100 *NROW(which(MAntel.all<0.05))/(dim(MAntel.all)[1]*dim(MAntel.all)[2]) ###3.17 models with significant Mantel
+ifelse(MAntel.all<0.05,1,0); apply(ifelse(MAntel.all<0.05,1,0),2,sum)/42
+
+AICW<- AICweights(AIc.all$AIC)
+
+####
+Paths<-c()
+for(i in 1:NROW(Response.name)) {
+                           
+AA<-Coef.SEM.all[which(Coef.SEM.all$Response ==Response.name[i]), ]
+BB<-names(table(AA$Predictor))
+     for(j in 1:NROW(BB)) {  DD<-AA[which(AA$Predictor == BB[j]), ]
+                             v1<-DD[,"Std.Estimate"]
+                             v2<-as.numeric(DD[,"Std.Error"])
+                             v3<-DD[,"P.Value"]
+  
+     x<-list(estimate=v1,weight=AICW,se=v2)
+    coef<-round(model.average(x)$estimate,3)
+    se<-round(model.average(x)$se  ,3)
+    P.mean<- round(sum(v3*AICW) ,3)
+     P.sig<-  round( sum(ifelse(v3<0.051,1,0))/ NROW(v3) ,3)
+     CI.U<- coef + (1.96*se); ff<- ifelse(CI.U<0,1,0)
+     CI.L<- coef - (1.96*se); gg<- ifelse(CI.L<0,1,0)
+     Overlap<- ifelse( (ff+gg)==0,"Positive",ifelse( (ff+gg)==2,"Negative", "ns"))  
+   EE<-data.frame(Response=Response.name[i],Predictor=BB[j], coef=coef,se=se,CI.L=CI.L,CI.U=CI.U, Overlap=Overlap,P.mean=P.mean,P.sig=P.sig)
+
+Paths<-rbind(Paths, EE) }}  
+
+Paths[  -which(Paths$Overlap=="ns") ,  ]
+Significant.paths<-Paths[  -which(Paths$Overlap=="ns") ,  ]
+
+ 
+Sample<-Coef.SEM.all[which(Coef.SEM.all$Model == 30),"Response" ]
+Cor.Name <- Sample[min(which(Sample == "~~tree_ri")):max(which(Sample == "~~USERS_FS"))  ]
+Cor.Name <- names(table(Cor.Name))         
+
+Correlation<-c()
+ for(i in 1:NROW(Cor.Name)) {                 
+AA<-Coef.SEM.all[which(Coef.SEM.all$Response ==Cor.Name[i]), ]
+BB<-names(table(AA$Predictor))
+CC<-c()
+     for(j in 1:NROW(BB)) {  DD<-AA[which(AA$Predictor == BB[j]), ]
+                             Corre<-mean(DD[,"Std.Estimate"] )
+EE<-data.frame(Response=Cor.Name[i],Predictor=BB[j], Corre=Corre)
+Correlation<-rbind(Correlation, EE) }}  ##
+
+Sig.correlation<-Correlation[  which(abs(Correlation$Corre)>0.5) ,  ]
+Sig.Paths<-Paths[  -which(Paths$Overlap=="ns") ,  ]
+
+DatX<- Datxos[Selection[1:800   ],]
+row.names(DatX) <- NULL
+
+
+
+A<-2.2
+panel<-c("A","B","C","D","E")
+par(mfrow=c(3,2), mai = c(1, 1, 0.5, 0.5))######
+
+SPEC<- c("USERS_TOT","USERS_O","USERS_G","USERS_MAM","USERS_FS")
+VARS<- c("primary" )
+R.Name<-colnames(DatX)
+Ylab<- c("Total cavity-users","Obligate cavity-users",
+           "Generalist cavity-users", "Mammal cavity-users",
+           "Specialist cavity-users")
+```
+# Results
+
+All the models reached a good fit level with a median AUC of 0.837, 0.927, 0.941 and 0.954 for birds, mammals, reptiles/amphibians and trees, respectively. The central zone of Chile (32ºS to 42 ºS) concentrated the highest richness of trees, primary excavators and secondary users, decreasing to the southern zone until 56 ºS. Central valley from 32ºS to 37ºS has a low richness of trees and primary excavators in contrast to secondary cavity users which has a higher richness (Figure \@ref(fig:figure1)). A similar pattern is present on habitat generalist birds has a higher richness between 32 ºS to 34 ºS while obligated cavity user birds has their highest richness between 34 ºS to 37ºS. Forest specialist has a higher richness between 37 ºS to 41 ºS, while mammals are mainly concentrated in the coastal zone between 32 ºS to 39 ºS.
+
+```{r figure1, fig.width=20, fig.height=20, echo=FALSE, message=F, warning=F, fig.align="center", fig.cap= "Richness of tree hosts (A), cavity excavators (B) and total secondary cavity users (C) based on SDMs."}
+
+url <- "https://i.ibb.co/0rzQZmj/FIG-2.png"
+url_cont <- getURLContent(url)
+img <- readPNG(url_cont)
+rimg <- as.raster(img) # raster multilayer object
+r <- nrow(rimg) / ncol(rimg) # image ratio
+plot(rimg)
+
+```
+
+```{r table1,echo=F,warning=F,include=T}
+suppressMessages(Sig.Paths %>% kable(caption = "Resume of causal relationships from SEM showing the coefficients, standard errors, confidence intervals of coefficients (lower and upper), and averaged correlations from SEM among predictors and response variables. USER_TOT = total secondary cavity users, USER_O= obligated cavity users, USERS_G= generalist secondary cavity users, USER_FS= forest specialist cavity users, USER_MAM= mammals cavity users, primary = cavity excavators, notho_ri, richness of Nothofagus trees, npp= net primary productivity, tree_ri=richness of tree species, height= canopy height") %>% kable_styling(bootstrap_options = c("stripped","hover"),latex_options = "HOLD_position"))
+
+```
+
+## Nesting-cavity network
+
+Secondary users were causally associated with primary excavators, but also affected by some forest characteristics (Table \@ref(tab:table1)) Primary excavators had a strong positive effect (standardized coefficient, SC > 0.77) over all the groups of secondary users except for mammals (Fig. 2 to 5) Tree richness was positively associated with richness of mammals and primary excavators, while was negatively associated with that of habitat generalist birds. Biomass negatively affected all the secondary user groups except for forest specialist birds, with that effect being also negative for the richness of primary excavators. Richness of Nothofagus trees had a positive effect over the richness of primary excavators and forests specialist birds. Primary excavators were positively associated with canopy height, while forests specialist birds were positively influenced by net primary productivity. Biomass and tree richness had an interactive effect on primary excavators, which involved that zones with low biomass and high tree richness had the highest richness of primary excavators (Fig. 2 to 5.
+
+```{r figure,  warning=FALSE, echo=FALSE, include=TRUE, fig.align= "center", fig.cap="Relationship derived from LME of primary cavity excavators with total cavity users (A), obligated cavity users (B), habitat-generalist cavity users (C), mammal cavity users (D) and habitat-specialist cavity users (E)", fig.height=10, fig.width=6.5}
+
+suppressMessages(
+for (i in 1:NROW(SPEC)){   #######
+   Y<- as.vector(DatX[,which(R.Name==SPEC[i])])  
+   X<-as.vector(DatX[,VARS[1]])
+    Yob<- as.vector(Datxos[,which(R.Name==SPEC[i])])  
+   Xob<-as.vector(Datxos[,VARS[1]])
+
+fmla <- as.formula(paste("Y ~", "X"))
+M3<-lm(fmla,data=DatX ) ; summary(M3); Anova(M3) 
+summary(exp(Y))
+N<-1000
+   Xnew<- seq(0, log(4+1), length.out = N)
+   newd <- data.frame(X=Xnew)
+   newd<- predict(M3, newdata = newd, se.fit = TRUE) 
+ 
+yy<- newd$fit  ; ##yy<- exp(yy1) - 1
+ Error1<- newd$se.fit;Error1<- yy + (8*Error1) ## Error1<- yy + 2*(exp(Error1)) 
+ Error2<- newd$se.fit;Error2<- yy - (8*Error2)   ##Error2<- yy - 2*(exp(Error2)) 
+xx<- Xnew; 
+
+
+plot(Xob,Yob, mgp = c(4, 1, 0) , lty=2, ylim= c(0, max(Error1)),  xlim= c(0, log(4)),
+            xlab="Cavity excavators" ,type="n",las=1 , ylab= "",  
+            cex.lab=A,cex.axis=A, axes=TRUE )
+points(Xob,Yob, pch = 20, cex=.05, bg = "green")  
+  polygon(x=c(xx,rev(xx)),y=c(Error1,rev(yy)), col=rgb(.8, .6, 0.4,0.4),border=NA)
+  polygon(x=c(xx,rev(xx)),y=c(Error2,rev(yy)), col=rgb(.8, .6, 0.4,0.4),border=NA)
+  lines(xx,yy, col="red", lwd=2) 
+ mtext(side=2, line=5, text=Ylab[i], cex=A*.7)
+
+title(main=panel[i], adj=1, cex.main=A*1.2)
+  } 
+)
+
+```
+
+# Discussions
+
+Our findings support the facilitation effect hypothesis according which primary cavity excavators play an important role on the structuration of cavity-nesting network in Southern South American Forests at biogeographical scale. However, all types of cavity users (not only the obligated ones) were strongly affected by primary excavators, except for mammals. The habitat effect hypothesis was best supported only for mammals, which were more linked with tree species richness than primary excavators. Mammals may be influenced by other resources different from cavities such as seeds and insects, which are more abundant in forest with highest diversity of trees or structural complexity [@Schlinkert2016]. In fact, the native marsupial Dromiciops gliroides exhibits a high phenotypic plasticity in selecting nesting substrates, which could occur in other small mammal species making them less dependent on primary excavators [@Vazquez2020].
+
+The negative effect of biomass on the richness of primary excavators and tree cavity users could arise from two reasons: A) exotic forest plantations with high biomass and low cavity availability in central Chile [@Goded2019]. The negative effect of biomass should be evidenced at a broad spatial scales, considering that a high surface of this this land cover in central Chile [@Uribe2020]. B) Latitudinal gradient of tree species richness is inverse to that of forest biomass. 
+
+The strong positive effect of tree richness and canopy height on primary cavity excavators could be determined by the availability of large mature trees from a high variety of species for cavity excavation [@Altamirano2017]. In fact, the abundance of Magellanic woodpeckers was positively associated with the large diameter tree in old-growth forests [@Vergara2017]. On the other hand, _Nothofagus_ tree offers a variety of resources for primary and secondary cavity such as invertebrates and substrates suitable for cavities (Table 1). The effect of tree species was only negative for habitat generalists which is linked with a low dependency of this species group by native and less disturbed ecosystems (Mikusiński et al. 2001, Hoek et al. 2020). On the other hand, canopy cover and elevation were important variables for animals in the SDM, suggesting a high importance of forest and elevation for their suitability. In fact, previous study have shown nest size increasing with elevation for avian and mammalian cavity users [@Altamirano2019]. A positive association between birds diversity and NPP has been also found in tropical ecosystems resulting from a high availability of feeding resources [@Suttidate2019]. In our case the positive association of NPP could be associated with a bottom-up control over highest trophic levels such as insectivorous forest specialist birds. 
+
+The important role of woodpeckers has been highlighted at local scale, identifying a positive feedback with animal and fungus diversity in different forest ecosystems worldwide. However, their role on the spatial patterns of cavity-nesting networks has remained less explored, with a few studies exploring pattern of co-occurrences among cavity excavators and secondary users, and discussing the influence of climate and biomes on nesting-cavity network at regional scales [@Ibarra2020]. Here we aimed to unravel these relationships at a broad scale, however it is necessary to discuss some limitations of our study aiming to avoid misunderstandings of the results. First, it is important to clarify that we presented a scenario based only on a potential spatial distribution of organisms, however other dynamics and resources could be playing an important role modulating the actual distribution of species (food, disturbances, predation, competence). Studies have identified that currently SDM and other methods such as Macroecological Models (MEM) are able to estimate species richness with similar results [@Biber2020].
+
+Fungi are known to be importantly associated with cavity generation, contributing with the facilitation effect and using birds for dispersal between cavities [@Jusino2015]. Saproxylic insects also are an important group for cavity-nesting network, by representing a trophic resource for primary excavators and secondary cavity users, but also by contributing to the wood decomposition thought larvae activity of dead trees.
+
+Woodpeckers have been considered as ecological engineers in forest, by modulating the availability of resources for other species within the ecosystems and generating a facilitation effect that benefits the reproductive success of several species [@Mikusinski2001]. Here, we support that ecological assemblages of secondary cavity users are highly influenced by the richness of cavity excavator at broad scale. Our results highlight the usefulness of the development of new approaches for analyzing ecological networks and their underlaying process from a macroecological perspective.
+
+
+# References
